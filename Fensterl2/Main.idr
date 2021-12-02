@@ -21,18 +21,38 @@ followCommand cmd (Pos x y) = case cmd of
                                    (Down n) => Pos x $ y + cast n
                                    (Up n) => Pos x $ y - cast n
 
-followCommands : List1 SubCommand -> Position -> Position
-followCommands cmds init = let
-  orders : List1 (Position -> Position)
-  orders = map followCommand cmds
+followCommands : List1 SubCommand -> (SubCommand -> a -> a) -> a -> a
+followCommands cmds exec init = let
+  orders : List1 (a -> a)
+  orders = map exec cmds
   in foldl1By (\pos, order => order pos) ($init) orders
 
 multiplyResult : Position -> Int
 multiplyResult (Pos x y) = x * y
+
+-- Ex 2
+
+data State : Type where
+  St : Int -> Int -> Int -> State
+
+initState : State
+initState = St 0 0 0
+
+fromState : State -> Position
+fromState (St x y _) = Pos x y
+
+followCommand' : SubCommand -> State -> State
+followCommand' cmd (St x y aim) = case cmd of
+                                   (Forward n) => let n' = cast n
+                                                  in St (x + n') (y + aim*n') aim
+                                   (Down n) => St x y $ aim + cast n
+                                   (Up n) => St x y $ aim - cast n
 
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl2/input"
   printLn $ length $ forget res
 
-  printLn $ multiplyResult $ followCommands res initPos
+  printLn $ multiplyResult $ followCommands res followCommand initPos
+
+  printLn $ multiplyResult $ fromState $ followCommands res followCommand' initState
