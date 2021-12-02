@@ -49,8 +49,8 @@ grammarWhitespace = let
                  _ => Nothing
   in terminal "Whitespace" getWS
 
-grammarEmptyLine : Grammar () Token True ()
-grammarEmptyLine = grammarWhitespace *> grammarNewline
+grammarEmptyLine : Grammar () Token True (List ())
+grammarEmptyLine = manyTill grammarNewline grammarWhitespace
 
 grammar : Grammar () Token True (List1 Nat)
 grammar = someTill (manyTill eof grammarEmptyLine) grammarLine
