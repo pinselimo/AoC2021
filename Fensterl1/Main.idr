@@ -11,7 +11,7 @@ import Data.List
 import Data.List1
 
 -- For chaining many printLns
-%ambiguity_depth 5
+%ambiguity_depth 6
 
 -- Parsing
 data Token : Type where
@@ -106,6 +106,15 @@ deeper' (a:::aas) = case aas of
 countDeeperComonad : Ord a => List1 a -> Nat
 countDeeperComonad = length . filter id . forget . extend deeper'
 
+sumOf3 : Num a => List1 a -> a
+sumOf3 (x:::xs) = case xs of
+                       (y::z::_) => x + y + z
+                       _ => 0
+
+pairThreeComonad : Num a => List1 a -> List1 a
+pairThreeComonad = extend sumOf3
+
+
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl1/input"
@@ -117,11 +126,15 @@ main = do
   let r1' = countDeeperPointfree res
   printLn r1'
 
-  --let r1'' = countDeeperComonad res
-  --printLn r1''
+  let r1'' = countDeeperComonad res
+  printLn r1''
 
   let r2 = countDeeperIdiomatic $ pairThreeIdiomatic $ forget res
   printLn r2
 
   let r2' = countDeeperIdiomatic $ pairThreePointfree $ forget res
   printLn r2'
+
+  let r2'' = countDeeperComonad $ pairThreeComonad res
+  printLn r2''
+
