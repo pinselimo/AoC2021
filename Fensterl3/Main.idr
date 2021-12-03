@@ -16,8 +16,17 @@ countOs (x::xs) = case x of
     k : Nat
     k = countOs xs
 
-swap : List1 (List Bit) -> List (List Bit)
-swap = foldr1By (zipWith (\a => ([a]++))) (map (::[]))
+interface Listlike (t : Type -> Type) where
+  lcons : a -> t a -> t a
+
+Listlike List where
+  lcons a l = a::l
+
+Listlike List1 where
+  lcons a l1 = a:::(forget l1)
+
+swap : (Functor t, Zippable t, Listlike t) => List1 (t Bit) -> t (List1 Bit)
+swap = foldr1By (zipWith (\a => (lcons a))) (map (:::[]))
 
 toBin : List Bit -> Bin
 toBin = toBin' . reverse
