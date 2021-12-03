@@ -15,7 +15,7 @@ countOs [] = 0
 countOs (x::xs) = case x of
   O => S k
   Z => k
-  where 
+  where
     k : Nat
     k = countOs xs
 
@@ -39,22 +39,29 @@ toBin = toBin' . reverse
     toBin' (O::r) = B1 $ toBin' r
     toBin' (Z::r) = B0 $ toBin' r
 
+criterium : Predicate -> List Bit -> Nat -> Bit
+criterium p x n = if p (2 * countOs x) n then O else Z
+
 discern : List1 (List Bit) -> (Nat, Nat)
 discern input = let
-    determine : Predicate -> Nat -> Bit
-    determine p x = if p (2*x) (length $ forget input) then O else Z
+    determine : Predicate -> List Bit -> Bit
+    determine p x = criterium p x . length $ forget input
     proc : Predicate -> List1 (List Bit) -> Nat
-    proc p = binToNat . toBin . map (determine p . countOs . forget) . swap
+    proc p = binToNat . toBin . map (determine p . forget) . swap
   in (proc (>) input, proc (<) input)
 
 -- Ex 2
 o2crit : Predicate -> List Bit -> Bit
-o2crit p x = if p (2 * countOs x) (length x) then O else Z
+o2crit p x = criterium p x $ length x
 
 filter' : List1 Bool -> List1 (List1 Bit) -> List1 (List1 Bit)
-filter' ps xxs@(x:::_) = case map snd . filter fst . forget . zip ps $ xxs of
-                    (x::xs) => x:::xs
-                    _ => (x:::[])
+filter' ps xxs@(x:::_) = case fFilter xxs of
+                  (x::xs) => x:::xs
+                  _ => (x:::[])
+                    where
+                      fFilter : List1 (List1 Bit) -> List (List1 Bit)
+                      fFilter = map snd . filter fst . forget . zip ps
+                  
 
 retrieve' : Predicate -> Nat -> List1 (List1 Bit) -> List1 Bit
 retrieve' _ _ (xs:::[]) = xs
@@ -73,7 +80,7 @@ discern' : List1 (List1 Bit) -> (Nat, Nat)
 discern' xs = let
   sx  = forget $ swap xs
   in (retrieve (>=) 0 xs, retrieve (<) 0 xs)
- 
+
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl3/input"
