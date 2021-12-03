@@ -10,14 +10,16 @@ import Data.List1
 Predicate : Type
 Predicate = Nat -> Nat -> Bool
 
-countOs : List Bit -> Nat
-countOs [] = 0
-countOs (x::xs) = case x of
-  O => S k
-  Z => k
-  where
-    k : Nat
-    k = countOs xs
+countOs' : List Bit -> Nat
+countOs' [] = 0
+countOs' (x::xs) = let
+    k = countOs' xs
+  in case x of
+    O => S k
+    Z => k
+
+countOs : List1 Bit -> Nat
+countOs = countOs' . forget
 
 interface Listlike (t : Type -> Type) where
   lcons : a -> t a -> t a
@@ -39,20 +41,20 @@ toBin = toBin' . reverse
     toBin' (O::r) = B1 $ toBin' r
     toBin' (Z::r) = B0 $ toBin' r
 
-criterium : Predicate -> List Bit -> Nat -> Bit
+criterium : Predicate -> List1 Bit -> Nat -> Bit
 criterium p x n = if p (2 * countOs x) n then O else Z
 
 discern : List1 (List Bit) -> (Nat, Nat)
 discern input = let
-    determine : Predicate -> List Bit -> Bit
+    determine : Predicate -> List1 Bit -> Bit
     determine p x = criterium p x . length $ forget input
     proc : Predicate -> List1 (List Bit) -> Nat
-    proc p = binToNat . toBin . map (determine p . forget) . swap
+    proc p = binToNat . toBin . map (determine p) . swap
   in (proc (>) input, proc (<) input)
 
 -- Ex 2
-o2crit : Predicate -> List Bit -> Bit
-o2crit p x = criterium p x $ length x
+o2crit : Predicate -> List1 Bit -> Bit
+o2crit p x = criterium p x . length . forget $ x
 
 filter' : List1 Bool -> List1 (List1 Bit) -> List1 (List1 Bit)
 filter' ps xxs@(x:::_) = case fFilter xxs of
@@ -69,7 +71,7 @@ retrieve' p n xxs = let
     sx : List (List1 Bit)
     sx = drop n . forget . swap $ xxs
   in case sx of
-          (s::_) => let predicates = map (== (o2crit p $ forget s)) s
+          (s::_) => let predicates = map (==o2crit p s) s
                     in retrieve' p (S n) $ filter' predicates xxs
           _ => head xxs
 
