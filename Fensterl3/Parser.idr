@@ -14,6 +14,12 @@ Show Bit where
   show O = "1"
   show Z = "0"
 
+export
+Eq Bit where
+  O == O = True
+  Z == Z = True
+  _ == _ = False
+
 data Token : Type where
   TkNewline : Token
   TkWhitespace : Token
