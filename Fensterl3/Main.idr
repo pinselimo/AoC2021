@@ -7,6 +7,9 @@ import Fensterl3.Binaries
 import Data.List
 import Data.List1
 
+Predicate : Type
+Predicate = Nat -> Nat -> Bool
+
 countOs : List Bit -> Nat
 countOs [] = 0
 countOs (x::xs) = case x of
@@ -38,10 +41,10 @@ toBin = toBin' . reverse
 
 discern : List1 (List Bit) -> (Nat, Nat)
 discern input = let
-  determine : (Nat -> Nat -> Bool) -> Nat -> Bit
-  determine f x = if f (2*x) (length $ forget input) then O else Z
-  proc : (Nat -> Nat -> Bool) -> List1 (List Bit) -> Nat
-  proc f = binToNat . toBin . map (determine f . countOs) . swap
+    determine : Predicate -> Nat -> Bit
+    determine p x = if p (2*x) (length $ forget input) then O else Z
+    proc : Predicate -> List1 (List Bit) -> Nat
+    proc p = binToNat . toBin . map (determine p . countOs . forget) . swap
   in (proc (>) input, proc (<) input)
 
 main : HasIO io => io ()
@@ -49,5 +52,5 @@ main = do
   res <- Input.readInput tokenizer grammar "Fensterl3/input"
   printLn . length . forget $ res
 
-  printLn . uncurry (*) . discern $ res
+  printLn . uncurry (*) . discern . map forget $ res
 
