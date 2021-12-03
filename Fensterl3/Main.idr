@@ -63,12 +63,10 @@ filter' ps xxs@(x:::_) = case fFilter xxs of
                     where
                       fFilter : List1 (List1 Bit) -> List (List1 Bit)
                       fFilter = map snd . filter fst . forget . zip ps
-                  
 
 retrieve' : Predicate -> Nat -> List1 (List1 Bit) -> List1 Bit
 retrieve' _ _ (xs:::[]) = xs
 retrieve' p n xxs = let
-    sx : List (List1 Bit)
     sx = drop n . forget . swap $ xxs
   in case sx of
           (s::_) => let predicates = map (==o2crit p s) s
@@ -80,7 +78,7 @@ retrieve p n = binToNat . toBin . forget . retrieve' p n
 
 discern' : List1 (List1 Bit) -> (Nat, Nat)
 discern' xs = let
-  sx  = forget $ swap xs
+    sx  = forget $ swap xs
   in (retrieve (>=) 0 xs, retrieve (<) 0 xs)
 
 main : HasIO io => io ()
