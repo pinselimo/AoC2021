@@ -47,10 +47,39 @@ discern input = let
     proc p = binToNat . toBin . map (determine p . countOs . forget) . swap
   in (proc (>) input, proc (<) input)
 
+-- Ex 2
+o2crit : Predicate -> List Bit -> Bit
+o2crit p x = if p (2 * countOs x) (length x) then O else Z
+
+filter' : List1 Bool -> List1 (List1 Bit) -> List1 (List1 Bit)
+filter' ps xxs@(x:::_) = case map snd . filter fst . forget . zip ps $ xxs of
+                    (x::xs) => x:::xs
+                    _ => (x:::[])
+
+retrieve' : Predicate -> Nat -> List1 (List1 Bit) -> List1 Bit
+retrieve' _ _ (xs:::[]) = xs
+retrieve' p n xxs = let
+    sx : List (List1 Bit)
+    sx = drop n . forget . swap $ xxs
+  in case sx of
+          (s::_) => let predicates = map (== (o2crit p $ forget s)) s
+                    in retrieve' p (S n) $ filter' predicates xxs
+          _ => head xxs
+
+retrieve : Predicate -> Nat -> List1 (List1 Bit) -> Nat
+retrieve p n = binToNat . toBin . forget . retrieve' p n
+
+discern' : List1 (List1 Bit) -> (Nat, Nat)
+discern' xs = let
+  sx  = forget $ swap xs
+  in (retrieve (>=) 0 xs, retrieve (<) 0 xs)
+ 
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl3/input"
   printLn . length . forget $ res
 
   printLn . uncurry (*) . discern . map forget $ res
+
+  printLn . uncurry (*) . discern' $ res
 
