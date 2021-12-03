@@ -50,13 +50,13 @@ grammarWhitespace = let
                  _ => Nothing
   in terminal "Whitespace" getWS
 
-grammarLine : Grammar () Token True (List Bit)
-grammarLine = many grammarBit <* grammarNewline
+grammarLine : Grammar () Token True (List1 Bit)
+grammarLine = some grammarBit <* grammarNewline
 
 grammarEmptyLine : Grammar () Token True (List ())
 grammarEmptyLine = manyTill grammarNewline grammarWhitespace
 
 export
-grammar : Grammar () Token True (List1 (List Bit))
+grammar : Grammar () Token True (List1 (List1 Bit))
 grammar = someTill (manyTill eof grammarEmptyLine) grammarLine
 
