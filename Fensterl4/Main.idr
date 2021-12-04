@@ -29,25 +29,34 @@ score p f g = let
 markAll : Eq a => a -> Bingo n a -> Bingo n a
 markAll x (MkGrid g) = MkGrid $ map (map (mark x)) g
 
-game : Eq a => {n : Nat} -> List a -> List (Bingo n a) -> Maybe (a, Bingo n a)
-game [] grids = Nothing
+game : Eq a => {n : Nat} -> List a -> List (Bingo n a) -> List (a, Bingo n a)
+game [] _ = []
+game _ [] = []
 game (x::xs) grids = let
     grids' = map (markAll x) grids
     winners = filter (checkWin chk) grids'
+    losers  = filter (not . checkWin chk) grids'
   in case winners of
-          (w::_) => Just (x, w)
+          (w::_) => (x, w) :: game xs losers
           _ => game xs grids'
-  
 
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl4/input"
   --printLn res
-  let winner : Maybe (Nat, Bingo 5 Nat)
-      winner = case res of
-            (rands, gs) => (forget <$> gs) >>= game rands
+  let result : List (Nat, Bingo 5 Nat)
+      result = case res of
+            (_, Nothing) => []
+            (rands, Just gs) => game rands (forget gs)
 
-  case winner of
-       Nothing => putStrLn "No winner could be determined."
-       Just (n, w) => printLn . (n*) . score chk get $ w
+  case result of
+       [] => putStrLn "No winner could be determined."
+       (l::ls) => let
+              lst = last (l:::ls)
+            in do
+              printLn $ calc l
+              printLn $ calc lst -- Ex 2
+            where
+              calc : (Nat, Bingo 5 Nat) -> Nat
+              calc (n,g) = n * score chk get g
 
