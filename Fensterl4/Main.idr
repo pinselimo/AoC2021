@@ -4,6 +4,9 @@ import AoC.Input
 import Fensterl4.Parser
 import Fensterl4.Types
 
+import Control.Monad.Writer
+import Control.Monad.Writer.Interface
+import Control.Monad.Identity
 import Data.List
 import Data.List1
 import Data.Vect
@@ -29,15 +32,16 @@ score p f g = let
 markAll : Eq a => a -> Bingo n a -> Bingo n a
 markAll x (MkGrid g) = MkGrid $ map (map (mark x)) g
 
-game : Eq a => {n : Nat} -> List a -> List (Bingo n a) -> List (a, Bingo n a)
-game [] _ = []
-game _ [] = []
+game : Eq a => {n : Nat} -> List a -> List (Bingo n a) ->
+       Writer (List (a, Bingo n a)) ()
+game [] _ = pure ()
 game (x::xs) grids = let
     grids' = map (markAll x) grids
     winners = filter (checkWin chk) grids'
     losers  = filter (not . checkWin chk) grids'
   in case winners of
-          (w::_) => (x, w) :: game xs losers
+          (w::_) => tell [(x, w)]
+                 >> game xs losers
           _ => game xs grids'
 
 main : HasIO io => io ()
@@ -47,7 +51,7 @@ main = do
   let result : List (Nat, Bingo 5 Nat)
       result = case res of
             (_, Nothing) => []
-            (rands, Just gs) => game rands (forget gs)
+            (rands, Just gs) => execWriter $ game rands (forget gs)
 
   case result of
        [] => putStrLn "No winner could be determined."
