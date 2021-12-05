@@ -3,7 +3,9 @@ module Fensterl5.Main
 import Data.List1
 import Data.List
 
+-- For second variant
 import Control.Monad.State
+import Data.Maybe
 import Data.SortedMap
 
 import AoC.Input
@@ -39,9 +41,7 @@ nDangerous = length . filter (>=2) . map (length . forget) . group . sort
 
 -- Using State and SortedMap
 recordField : Eq n => (n, n) -> SortedMap (n, n) Nat -> SortedMap (n, n) Nat
-recordField k m = case lookup k m of
-                   Nothing => insert k 1 m
-                   Just n  => insert k (S n) m
+recordField k m = insert k (S $ fromMaybe 0 $ lookup k m) m
 
 recordVent : (Range n, Eq n) =>
              Bool -> Vent n -> State (SortedMap (n, n) Nat) ()
@@ -49,7 +49,7 @@ recordVent d v = for_ (ventCoverage d v) (modify . recordField)
 
 fieldPops : (Range n, Eq n, Traversable t) =>
             Bool -> t (Vent n) -> State (SortedMap (n, n) Nat) ()
-fieldPops d = traverse_ (recordVent d)
+fieldPops d = traverse_ $ traverse_ (modify . recordField) . ventCoverage d
 
 countDangerous : (Ord a, Num a) => SortedMap (Nat, Nat) a -> Nat
 countDangerous = length . filter (>=2) . values
