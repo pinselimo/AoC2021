@@ -9,25 +9,27 @@ import Fensterl5.Parser
 data Dir : Type where
   Horizontal : Dir
   Vertical : Dir
+  Diagonal : Dir
 
-isHorV : Eq n => Vent n -> Maybe Dir
-isHorV (MkVent (x1, y1) (x2, y2)) = if x1 == x2 
-                                       then Just Horizontal
-                                       else if y1 == y2 
-                                       then Just Vertical
-                                       else Nothing
+isHVD : Eq n => Vent n -> Dir
+isHVD (MkVent (x1, y1) (x2, y2)) = case (x1 == x2, y1 == y2) of
+                                        (True, _) => Horizontal
+                                        (_, True) => Vertical
+                                        _         => Diagonal
 
-ventCoverage : (Range n, Eq n) => Vent n -> List (n, n)
-ventCoverage v@(MkVent (x1, y1) (x2, y2)) = 
-  let 
-    dir = isHorV v
-  in case dir of
-          Nothing => []
-          Just Horizontal => (x1,) <$> [y1..y2]
-          Just Vertical => (,y1) <$> [x1..x2]
+ventCoverage : (Range n, Eq n) => Bool -> Vent n -> List (n, n)
+ventCoverage diagonal v@(MkVent (x1, y1) (x2, y2)) = let
+        xs = [x1..x2]
+        ys = [y1..y2]
+        in case isHVD v of
+             Horizontal => (x1,) <$> ys
+             Vertical   => (,y1) <$> xs
+             Diagonal   => ifThenElse diagonal
+                             (zipWith (,) xs ys)
+                             []
 
-fullCoordinates : (Range n, Eq n) => List1 (Vent n) -> List (n, n)
-fullCoordinates = concat . map ventCoverage
+fullCoordinates : (Range n, Eq n) => Bool -> List1 (Vent n) -> List (n, n)
+fullCoordinates d = concat . map (ventCoverage d)
 
 nDangerous : (Range n, Eq n, Ord n) => List (n, n) -> Nat
 nDangerous = length . filter (>=2) . map (length . forget) . group . sort
@@ -35,6 +37,8 @@ nDangerous = length . filter (>=2) . map (length . forget) . group . sort
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl5/input"
-
-  printLn. nDangerous. fullCoordinates $ res
+  -- Ex 5.1
+  printLn . nDangerous . fullCoordinates False $ res
+  -- Ex 5.2
+  printLn . nDangerous . fullCoordinates True  $ res
 
