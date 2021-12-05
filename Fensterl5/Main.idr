@@ -3,6 +3,9 @@ module Fensterl5.Main
 import Data.List1
 import Data.List
 
+import Control.Monad.State
+import Data.SortedMap
+
 import AoC.Input
 import Fensterl5.Parser
 
@@ -34,6 +37,23 @@ fullCoordinates d = concat . map (ventCoverage d)
 nDangerous : (Range n, Eq n, Ord n) => List (n, n) -> Nat
 nDangerous = length . filter (>=2) . map (length . forget) . group . sort
 
+-- Using State and SortedMap
+recordField : Eq n => (n, n) -> SortedMap (n, n) Nat -> SortedMap (n, n) Nat
+recordField k m = case lookup k m of
+                   Nothing => insert k 1 m
+                   Just n  => insert k (S n) m
+
+recordVent : (Range n, Eq n) =>
+             Bool -> Vent n -> State (SortedMap (n, n) Nat) ()
+recordVent d v = for_ (ventCoverage d v) (modify . recordField)
+
+fieldPops : (Range n, Eq n, Traversable t) =>
+            Bool -> t (Vent n) -> State (SortedMap (n, n) Nat) ()
+fieldPops d = traverse_ (recordVent d)
+
+countDangerous : (Ord a, Num a) => SortedMap (Nat, Nat) a -> Nat
+countDangerous = length . filter (>=2) . values
+
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl5/input"
@@ -41,4 +61,9 @@ main = do
   printLn . nDangerous . fullCoordinates False $ res
   -- Ex 5.2
   printLn . nDangerous . fullCoordinates True  $ res
+
+  -- State and SortedMap
+  printLn $ countDangerous $ execState empty (fieldPops False res)
+
+  printLn $ countDangerous $ execState empty (fieldPops True res)
 
