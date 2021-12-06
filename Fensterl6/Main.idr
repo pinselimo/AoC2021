@@ -9,7 +9,7 @@ import Fensterl6.Parser
 
 -- Simple, awfully slow solution
 simpleStep : List Int -> List Int
-simpleStep [] = [] 
+simpleStep [] = []
 simpleStep (x::xs) = if x == 0
                   then 6 :: simpleStep xs ++ [8]
                   else (x-1) :: simpleStep xs
@@ -48,28 +48,31 @@ stSim 0 = collect
 stSim (S n) = stStep . stSim n
 
 -- Using vectors
-vColl : List Nat -> Maybe (Vect 9 Nat)
-vColl [] = pure $ replicate 9 0
-vColl (x::xs) = do
-  v <- vColl xs
-  x' <- natToFin x 9
-  pure $ (updateAt x' S) v
+vColl : {n:Nat} -> Nat -> List Nat -> Maybe ((Vect (S n) Nat), Fin (S n))
+vColl ix [] = natToFin ix (S n) >>= pure . (replicate (S n) 0,)
+vColl ix (x::xs) = do
+  (v, ix') <- vColl ix xs
+  x' <- natToFin x (S n)
+  pure ((updateAt x' S) v, ix')
 
-vStep : Vect 9 Nat -> Vect 9 Nat
-vStep v = let
-    reprods = head v
-  in updateAt 6 (reprods+) $ tail v ++ pure reprods
+plusOneSucc : (n : Nat) -> S n = n + 1
+plusOneSucc 0 = Refl
+plusOneSucc (S k) = cong S (plusOneSucc k)
 
-vSim : Nat -> Vect 9 Nat -> Vect 9 Nat
-vSim 0 = id
-vSim (S k) = vStep . vSim k
+vStep : {n:Nat} -> Fin (S n) -> Vect (S n) Nat -> Vect (S n) Nat
+vStep omega v = let
+    repr = head v
+  in updateAt omega (repr+)
+   $ rewrite plusOneSucc n in tail v ++ pure repr
 
+vSim : {n:Nat} -> Nat -> Fin (S n) -> Vect (S n) Nat -> Vect (S n) Nat
+vSim 0 _ = id
+vSim (S k) omega = vStep omega . vSim k omega
 
 
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl6/input"
-  printLn res
 
   -- Ex1
   --printLn . length . simpleSim 80 . forget . map cast $ res
@@ -81,9 +84,9 @@ main = do
 
 
   -- Using vector
-  case vColl $ forget res of
+  case vColl 6 $ forget res of
        Nothing => printLn res
-       Just v  => do
-         printLn . sum . vSim 80 $ v -- Ex1
-         printLn . sum . vSim 256 $ v -- Ex2
-        
+       Just (v, ix) => do
+         printLn . sum . vSim {n=8} 80 ix $ v -- Ex1
+         printLn . sum . vSim {n=8} 256 ix $ v -- Ex2
+
