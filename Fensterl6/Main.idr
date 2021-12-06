@@ -1,10 +1,13 @@
 module Fensterl6.Main
 
 import Data.List1
+import Data.Vect
 
 import AoC.Input
 import Fensterl6.Parser
--- Simple, awefully slow solution
+
+
+-- Simple, awfully slow solution
 simpleStep : List Int -> List Int
 simpleStep [] = [] 
 simpleStep (x::xs) = if x == 0
@@ -44,6 +47,25 @@ stSim : Nat -> List Nat -> St
 stSim 0 = collect
 stSim (S n) = stStep . stSim n
 
+-- Using vectors
+vColl : List Nat -> Maybe (Vect 9 Nat)
+vColl [] = pure $ replicate 9 0
+vColl (x::xs) = do
+  v <- vColl xs
+  x' <- natToFin x 9
+  pure $ (updateAt x' S) v
+
+vStep : Vect 9 Nat -> Vect 9 Nat
+vStep v = let
+    reprods = head v
+  in updateAt 6 (reprods+) $ tail v ++ pure reprods
+
+vSim : Nat -> Vect 9 Nat -> Vect 9 Nat
+vSim 0 = id
+vSim (S k) = vStep . vSim k
+
+
+
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl6/input"
@@ -57,3 +79,11 @@ main = do
   -- Ex2
   printLn . sumSt . stSim 256 . forget $ res
 
+
+  -- Using vector
+  case vColl $ forget res of
+       Nothing => printLn res
+       Just v  => do
+         printLn . sum . vSim 80 $ v -- Ex1
+         printLn . sum . vSim 256 $ v -- Ex2
+        
