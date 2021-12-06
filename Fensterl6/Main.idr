@@ -54,3 +54,6 @@ main = do
 
   printLn . sumSt . stSim 80 . forget $ res
 
+  -- Ex2
+  printLn . sumSt . stSim 256 . forget $ res
+
