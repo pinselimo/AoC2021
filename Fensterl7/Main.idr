@@ -19,25 +19,23 @@ median xs = let
 diff : Int -> Int -> Int
 diff x y = abs (x - y)
 
-round : Double -> Nat
-round d = let
-    n : Nat
-    n = cast d
-  in if d < (cast n + 0.5)
-        then n
-        else S n
+-- Ex 2
+bounds : Double -> (Nat, Nat)
+bounds d = let
+  n = cast d
+  in (n, S n)
 
-mean : List Nat -> Maybe Nat
+mean : List Nat -> Maybe (Nat, Nat)
 mean [] = Nothing
-mean xs = Just $ round $ (cast $ sum xs) / (cast $ length xs)
+mean xs = Just $ bounds $ (cast $ sum xs) / (cast $ length xs)
 
 toNonLFuel : (Num a, Range a) => a -> a
 toNonLFuel n = sum [0..n]
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl7/testinput"
-  --printLn res
+  res <- Input.readInput tokenizer grammar "Fensterl7/input"
+  printLn $ length $ forget res
 
   let m = median $ forget res
   printLn m
@@ -49,13 +47,14 @@ main = do
 
          printLn $ sum fuelConsumption
 
+  -- Ex 2
   let m = mean $ forget res
   printLn m
   case m of
        Nothing => printLn "Error"
-       Just n  => do
+       Just (n, n')  => do
          let fuelConsumption = map (toNonLFuel . diff (cast n) . cast) $ forget res
-         --printLn fuelConsumption
+         let fuelConsumption' = map (toNonLFuel . diff (cast n') . cast) $ forget res
 
-         printLn $ sum fuelConsumption
+         printLn $ min (sum fuelConsumption) (sum fuelConsumption')
 
