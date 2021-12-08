@@ -29,36 +29,37 @@ Code = List Char
 code : String -> Code
 code = unpack
 
-contains : Code -> Code -> Bool
-contains a = foldr (\e, ac => (e `elem` a) && ac) True
+infixr 6 ~~
+(~~): Code -> Code -> Bool
+(~~) a = foldr (\e, ac => (e `elem` a) && ac) True
 
 equals : Code -> Code -> Bool
-equals a b = contains a b && contains b a
+equals a b = a ~~ b && b ~~ a
 
 diff : Code -> Code -> Code
-diff u a = foldr (\e, ac => ifThenElse (e `elem` a) ac $ e::ac) [] u
+diff u a = foldr (\e, ac => if e `elem` a then ac else e::ac) [] u
 
 finished : SortedMap Nat Code -> Bool
 finished m = all (`elem` keys m) [0..9]
 
 fromFive : Code -> SortedMap Nat Code -> Maybe Nat
 fromFive c m = let
-  five = (c `contains`) <$> (pure diff <*> lookup 4 m <*> lookup 1 m)
-  three = (c `contains`) <$> lookup 7 m
+  five  = (c~~) <$> (pure diff <*> lookup 4 m <*> lookup 1 m)
+  three = (c~~) <$> lookup 7 m
   in case (three, five) of
-          (Just False, Just False) => Just 2
-          (Just True, _) => Just 3
-          (_, Just True) => Just 5
+          (Just True, _)   => Just 3
+          (_, Just True)   => Just 5
+          (Just _, Just _) => Just 2
           _ => Nothing
 
 fromSix : Code -> SortedMap Nat Code -> Maybe Nat
 fromSix c m = let
-  nine = (c `contains`) <$> lookup 3 m
-  six  = (c `contains`) <$> lookup 5 m
+  nine = (c~~) <$> lookup 3 m
+  six  = (c~~) <$> lookup 5 m
   in case (nine, six) of
-          (Just False, Just False) => Just 0
-          (Just False, Just True) => Just 6
           (Just True, _) => Just 9
+          (Just _, Just True) => Just 6
+          (Just _, Just _) => Just 0
           _ => Nothing
 
 fromCode : Code -> SortedMap Nat Code -> SortedMap Nat Code
