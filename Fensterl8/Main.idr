@@ -57,9 +57,9 @@ fromSix c m = let
   nine = (c~~) <$> lookup 3 m
   six  = (c~~) <$> lookup 5 m
   in case (nine, six) of
-          (Just True, _) => Just 9
+          (Just True, _)      => Just 9
           (Just _, Just True) => Just 6
-          (Just _, Just _) => Just 0
+          (Just _, Just _)    => Just 0
           _ => Nothing
 
 fromCode : Code -> SortedMap Nat Code -> SortedMap Nat Code
