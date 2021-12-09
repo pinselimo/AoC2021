@@ -81,14 +81,13 @@ combineNeighbors x l = case partition (any (neighborOf x)) l of
                          (z::zs, ys) => (x::z) :: zs ++ ys
                          ([]   ,  _) => pure x :: l
 
-combineBasins : List (List Coord) -> List (List Coord)
-combineBasins [] = []
-combineBasins (xs::xxs) = case partition (any ((`any` xs) . neighborOf)) xxs of
-         ([],    _) => xs :: combineBasins xxs
-         (ns, xxs') => combineBasins $ (xs++concat ns) :: xxs'
+combineBasins : List Coord -> List (List Coord) -> List (List Coord)
+combineBasins xs xxs = case partition (any ((`any` xs) . neighborOf)) xxs of
+         ([],    _) => xs :: xxs
+         (ns, xxs') => combineBasins (xs++concat ns) xxs'
 
 combine : List Coord -> List (List Coord)
-combine = combineBasins . foldr combineNeighbors []
+combine = foldr combineBasins [] . foldr combineNeighbors []
 
 ex2Res : List (List Coord) -> Nat
 ex2Res = foldr (*) 1 . take 3 . reverse . sort . map length
