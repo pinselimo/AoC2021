@@ -38,12 +38,9 @@ toList' x y g = case peek (x, y) g of
 toLists : Grid a -> List (List a)
 toLists = toList' 0 0
 
-fromList1 : List1 (List1 a) -> Grid a
-fromList1 = fromList . map forget . forget
-
 dimNeighbors : Nat -> List Nat
-dimNeighbors Z = [Z, S Z]
-dimNeighbors (S a) = [a..S (S a)]
+dimNeighbors (S a) = [a..a+2]
+dimNeighbors _ = [0, 1]
 
 neighbors : Coord -> List Coord
 neighbors (x, y) = [(x',y')
@@ -55,9 +52,7 @@ neighbors (x, y) = [(x',y')
 isLowpoint : Ord a => Grid a -> Maybe Bool
 isLowpoint g = let
     ns = mapMaybe (`peek` g) . neighbors . pos $ g
-  in do
-    x <- extract g
-    pure $ all (x <) ns
+  in pure . (`all` ns) . (<) =<< extract g 
 
 scoreLows : (Ord a, Num a) => Grid a -> Maybe a
 scoreLows g = do
@@ -73,24 +68,25 @@ isBasin : (Num a, Ord a) => Grid a -> Maybe Bool
 isBasin g = extract g >>= pure . (<9)
 
 basinCoords : Grid Bool -> Maybe (Either () Coord)
-basinCoords g = extract g >>= \p => pure $ if p then (Right $ pos g) else Left ()
+basinCoords g = extract g >>= pure . (`ifThenElse` (Right $ pos g) $ Left ())
 
-infixr 6 ?#
-(?#) : Coord -> Coord -> Bool
-(x,y) ?# (x', y') = (x == x' && y == S y' || y == y' && x == S x')
-                 ||
-                    (x == x' && y' == S y || y == y' && x' == S x)
+neighborOf : Coord -> Coord -> Bool
+neighborOf (x,y) (x', y') = let
+  ym = y == y'
+  xm = x == x'
+  in (xm || ym) && (x == S x' || y == S y' || x' == S x || y' == S y)
 
 combineNeighbors : List (List Coord) -> List Coord -> List (List Coord)
 combineNeighbors l [] = l
-combineNeighbors l (x::xs) = case partition (any (x?#)) l of
-                        ([], _) => combineNeighbors ([x]::l) xs
-                        ((z::zs, ys)) => combineNeighbors ((x::z)::zs++ys) xs
+combineNeighbors l (x::xs) = case partition (any (neighborOf x)) l of
+                      (z::zs, ys) => combineNeighbors ((x::z)::zs++ys) xs
+                      ([], _)     => combineNeighbors ([x]::l) xs
 
 combineBasins : List (List Coord) -> List (List Coord)
 combineBasins [] = []
-combineBasins (x::xs) = case partition (any (\n => any (n?#) x)) xs of
-                       (ns, xs') => (x ++ concat ns) :: combineBasins xs'
+combineBasins (xs::xxs) = let
+  (ns, xxs') = partition (any (\n => any (neighborOf n) xs)) xxs
+ in (xs ++ concat ns) :: combineBasins xxs'
 
 combineUntilFinished : List (List Coord) -> List (List Coord)
 combineUntilFinished xs = let
@@ -111,7 +107,7 @@ main = do
   res <- Input.readInput tokenizer grammar "Fensterl9/input"
   --printLn res
 
-  let grid = fromList1 res
+  let grid = fromList . map forget . forget $ res
 
   -- Ex 1
   printLn . sum . map sum . toLists . findLowpoints $ grid
