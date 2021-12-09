@@ -4,8 +4,6 @@ import Data.Either
 import Data.Fin
 import Data.List
 import Data.List1
-import Data.Nat
-import Data.SortedMap
 
 import Common.Input
 import Common.Comonad
@@ -52,7 +50,7 @@ neighbors (x, y) = [(x',y')
 isLowpoint : Ord a => Grid a -> Maybe Bool
 isLowpoint g = let
     ns = mapMaybe (`peek` g) . neighbors . pos $ g
-  in pure . (`all` ns) . (<) =<< extract g 
+  in pure . (`all` ns) . (<) =<< extract g
 
 scoreLows : (Ord a, Num a) => Grid a -> Maybe a
 scoreLows g = do
@@ -78,8 +76,8 @@ neighborOf (x,y) (x', y') = let
 
 combineNeighbors : Coord -> List (List Coord) -> List (List Coord)
 combineNeighbors x l = case partition (any (neighborOf x)) l of
-                         (z::zs, ys) => (x::z) :: zs ++ ys
-                         ([]   ,  _) => pure x :: l
+         (z::zs, ys) => (x::z) :: zs ++ ys
+         ([]   ,  _) => pure x :: l
 
 combineBasins : List Coord -> List (List Coord) -> List (List Coord)
 combineBasins xs xxs = case partition (any ((`any` xs) . neighborOf)) xxs of
@@ -90,7 +88,7 @@ combine : List Coord -> List (List Coord)
 combine = foldr combineBasins [] . foldr combineNeighbors []
 
 ex2Res : List (List Coord) -> Nat
-ex2Res = foldr (*) 1 . take 3 . reverse . sort . map length
+ex2Res = product . take 3 . reverse . sort . map length
 
 getEx2Res : Grid (Either () Coord) -> Nat
 getEx2Res = ex2Res . combine . mapMaybe getRight . concat . toLists
