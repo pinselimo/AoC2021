@@ -1,4 +1,4 @@
-module Fensterl5.Main
+module Fensterl05.Main
 
 import Data.List1
 import Data.List
@@ -9,7 +9,7 @@ import Data.Maybe
 import Data.SortedMap
 
 import Common.Input
-import Fensterl5.Parser
+import Fensterl05.Parser
 
 data Dir : Type where
   Horizontal : Dir
@@ -56,7 +56,7 @@ countDangerous = length . filter (>=2) . values
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl5/input"
+  res <- Input.readInput tokenizer grammar "Fensterl05/input"
   -- Ex 5.1
   printLn . nDangerous . fullCoordinates False $ res
   -- Ex 5.2

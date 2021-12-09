@@ -1,11 +1,11 @@
-module Fensterl3.Main
+module Fensterl03.Main
 
 import Data.List
 import Data.List1
 
 import Common.Input
-import Fensterl3.Parser
-import Fensterl3.Binaries
+import Fensterl03.Parser
+import Fensterl03.Binaries
 
 Predicate : Type
 Predicate = Nat -> Nat -> Bool
@@ -83,7 +83,7 @@ discern' xs = let
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl3/input"
+  res <- Input.readInput tokenizer grammar "Fensterl03/input"
   printLn . length . forget $ res
 
   printLn . uncurry (*) . discern . map forget $ res

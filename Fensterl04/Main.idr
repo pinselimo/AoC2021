@@ -1,4 +1,4 @@
-module Fensterl4.Main
+module Fensterl04.Main
 
 import Control.Monad.Writer
 import Control.Monad.Writer.Interface
@@ -8,8 +8,8 @@ import Data.List1
 import Data.Vect
 
 import Common.Input
-import Fensterl4.Parser
-import Fensterl4.Types
+import Fensterl04.Parser
+import Fensterl04.Types
 
 Pred : Type -> Type
 Pred a = a -> Bool
@@ -46,7 +46,7 @@ game (x::xs) grids = let
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl4/input"
+  res <- Input.readInput tokenizer grammar "Fensterl04/input"
   --printLn res
   let result : List (Nat, Bingo 5 Nat)
       result = case res of

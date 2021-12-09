@@ -1,10 +1,10 @@
-module Fensterl6.Main
+module Fensterl06.Main
 
 import Data.List1
 import Data.Vect
 
 import Common.Input
-import Fensterl6.Parser
+import Fensterl06.Parser
 
 
 -- Simple, awfully slow solution
@@ -72,7 +72,7 @@ vSim (S k) omega = vStep omega . vSim k omega
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl6/input"
+  res <- Input.readInput tokenizer grammar "Fensterl06/input"
 
   -- Ex1
   --printLn . length . simpleSim 80 . forget . map cast $ res

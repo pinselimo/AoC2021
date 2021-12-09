@@ -1,4 +1,4 @@
-module Fensterl3.Binaries
+module Fensterl03.Binaries
 
 import Data.Nat
 

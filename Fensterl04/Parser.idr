@@ -1,4 +1,4 @@
-module Fensterl4.Parser
+module Fensterl04.Parser
 
 import Text.Lexer
 import Text.Lexer.Tokenizer
@@ -6,7 +6,7 @@ import Text.Parser
 import Data.Nat
 import Text.Quantity
 
-import Fensterl4.Types
+import Fensterl04.Types
 
 data Token : Type where
   TkNewline : Token

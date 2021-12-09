@@ -1,4 +1,4 @@
-module Fensterl4.Types
+module Fensterl04.Types
 
 import Data.String
 import Data.Vect

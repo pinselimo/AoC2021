@@ -1,10 +1,10 @@
-module Fensterl7.Main
+module Fensterl07.Main
 
 import Data.List1
 import Data.List
 
 import Common.Input
-import Fensterl6.Parser
+import Fensterl06.Parser
 
 -- Ex 1
 median : List Nat -> Maybe Nat
@@ -45,7 +45,7 @@ fuel2 = totalFuel toNonLFuel
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl7/input"
+  res <- Input.readInput tokenizer grammar "Fensterl07/input"
   let res' = map cast res
   printLn $ length $ forget res
 

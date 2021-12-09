@@ -1,4 +1,4 @@
-module Fensterl5.Parser
+module Fensterl05.Parser
 
 import Text.Lexer
 import Text.Lexer.Tokenizer

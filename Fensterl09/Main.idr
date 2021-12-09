@@ -1,4 +1,4 @@
-module Fensterl9.Main
+module Fensterl09.Main
 
 import Data.Either
 import Data.Fin
@@ -8,7 +8,7 @@ import Data.List1
 import Common.Input
 import Common.Comonad
 import Common.Comonad.Store
-import Fensterl9.Parser
+import Fensterl09.Parser
 
 Coord : Type
 Coord = (Nat, Nat)
@@ -95,7 +95,7 @@ getEx2Res = ex2Res . combine . mapMaybe getRight . concat . toLists
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl9/input"
+  res <- Input.readInput tokenizer grammar "Fensterl09/input"
   --printLn res
 
   let grid = fromList . map forget . forget $ res

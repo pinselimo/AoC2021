@@ -1,4 +1,4 @@
-module Fensterl8.Parser
+module Fensterl08.Parser
 
 import Text.Lexer
 import Text.Lexer.Tokenizer

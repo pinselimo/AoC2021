@@ -1,9 +1,9 @@
-module Fensterl2.Main
+module Fensterl02.Main
 
 import Data.List1
 
 import Common.Input
-import Fensterl2.Parser
+import Fensterl02.Parser
 
 data Position : Type where
   Pos : Int -> Int -> Position -- not sure if it can be negative
@@ -50,7 +50,7 @@ followCommand' cmd (St x y aim) = case cmd of
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl2/input"
+  res <- Input.readInput tokenizer grammar "Fensterl02/input"
   printLn $ length $ forget res
 
   printLn $ multiplyResult $ followCommands res followCommand initPos

@@ -1,4 +1,4 @@
-module Fensterl8.Main
+module Fensterl08.Main
 
 import Data.List
 import Data.List1
@@ -6,7 +6,7 @@ import Data.Maybe
 import Data.SortedMap
 
 import Common.Input
-import Fensterl8.Parser
+import Fensterl08.Parser
 
 -- Ex 1
 outValsLen : (List1 String, List1 String) -> List1 Nat
@@ -93,7 +93,7 @@ translate m = map unelems . traverse (`retrieve` m) . map code
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl8/input"
+  res <- Input.readInput tokenizer grammar "Fensterl08/input"
   -- Ex 1
   printLn . sum . map (countSimple . outValsLen) $ res
 

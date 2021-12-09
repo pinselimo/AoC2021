@@ -1,4 +1,4 @@
-module Fensterl1.Main
+module Fensterl01.Main
 
 import Data.List
 import Data.List1
@@ -6,7 +6,7 @@ import Data.List1
 import Common.Input
 import Common.Comonad
 import Common.Comonad.List1
-import Fensterl1.Parser
+import Fensterl01.Parser
 
 -- For chaining many printLns
 %ambiguity_depth 6
@@ -62,7 +62,7 @@ pairThreeComonad = extend sumOf3
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl1/input"
+  res <- Input.readInput tokenizer grammar "Fensterl01/input"
   printLn $ length $ forget res
 
   let r1 = countDeeperIdiomatic $ forget res
