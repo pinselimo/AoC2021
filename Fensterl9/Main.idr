@@ -76,11 +76,10 @@ neighborOf (x,y) (x', y') = let
   xm = x == x'
   in (xm || ym) && (x == S x' || y == S y' || x' == S x || y' == S y)
 
-combineNeighbors : List (List Coord) -> List Coord -> List (List Coord)
-combineNeighbors l [] = l
-combineNeighbors l (x::xs) = case partition (any (neighborOf x)) l of
-                      (z::zs, ys) => combineNeighbors ((x::z)::zs++ys) xs
-                      ([], _)     => combineNeighbors ([x]::l) xs
+combineNeighbors : Coord -> List (List Coord) -> List (List Coord)
+combineNeighbors x l = case partition (any (neighborOf x)) l of
+                    (z::zs, ys) => ((x::z)::zs++ys)
+                    ([], _)     => ([x]::l)
 
 combineBasins : List (List Coord) -> List (List Coord)
 combineBasins [] = []
@@ -94,7 +93,7 @@ combineUntilFinished xs = let
   in if xs == xs' then xs else combineUntilFinished xs'
 
 combine : List Coord -> List (List Coord)
-combine = combineUntilFinished . combineNeighbors []
+combine = combineUntilFinished . foldr combineNeighbors []
 
 ex2Res : List (List Coord) -> Nat
 ex2Res = foldr (*) 1 . take 3 . reverse . sort . map length
