@@ -3,7 +3,7 @@ module Fensterl6.Main
 import Data.List1
 import Data.Vect
 
-import AoC.Input
+import Common.Input
 import Fensterl6.Parser
 
 

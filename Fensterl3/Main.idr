@@ -1,11 +1,11 @@
 module Fensterl3.Main
 
-import AoC.Input
-import Fensterl3.Parser
-import Fensterl3.Binaries
-
 import Data.List
 import Data.List1
+
+import Common.Input
+import Fensterl3.Parser
+import Fensterl3.Binaries
 
 Predicate : Type
 Predicate = Nat -> Nat -> Bool

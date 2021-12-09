@@ -7,7 +7,7 @@ import Data.List1
 import Data.Nat
 import Data.SortedMap
 
-import AoC.Input
+import Common.Input
 import Fensterl9.Parser
 import Fensterl1.Comonad
 

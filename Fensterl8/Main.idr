@@ -5,7 +5,7 @@ import Data.List1
 import Data.Maybe
 import Data.SortedMap
 
-import AoC.Input
+import Common.Input
 import Fensterl8.Parser
 
 -- Ex 1

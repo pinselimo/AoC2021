@@ -3,7 +3,7 @@ module Fensterl1.Main
 import Data.List
 import Data.List1
 
-import AoC.Input
+import Common.Input
 import Fensterl1.Comonad
 import Fensterl1.Parser
 

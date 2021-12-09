@@ -1,11 +1,11 @@
 -- Inspired by this template:
 -- https://github.com/jumper149/AoC2021/blob/main/00-template/Main.idr
-module AoC.Input
+module Common.Input
 
-import System.File.ReadWrite
+import Data.List1
 import Text.Lexer.Tokenizer
 import Text.Parser
-import Data.List1
+import System.File.ReadWrite
 
 eitherLex : Tokenizer a -> String -> 
             Either (StopReason, (Int, (Int, String))) (List (WithBounds a))

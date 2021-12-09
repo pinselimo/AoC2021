@@ -1,9 +1,9 @@
 module Fensterl2.Main
 
-import AoC.Input
-import Fensterl2.Parser
-
 import Data.List1
+
+import Common.Input
+import Fensterl2.Parser
 
 data Position : Type where
   Pos : Int -> Int -> Position -- not sure if it can be negative

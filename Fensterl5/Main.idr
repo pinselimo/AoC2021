@@ -8,7 +8,7 @@ import Control.Monad.State
 import Data.Maybe
 import Data.SortedMap
 
-import AoC.Input
+import Common.Input
 import Fensterl5.Parser
 
 data Dir : Type where

@@ -1,15 +1,15 @@
 module Fensterl4.Main
 
-import AoC.Input
-import Fensterl4.Parser
-import Fensterl4.Types
-
 import Control.Monad.Writer
 import Control.Monad.Writer.Interface
 import Control.Monad.Identity
 import Data.List
 import Data.List1
 import Data.Vect
+
+import Common.Input
+import Fensterl4.Parser
+import Fensterl4.Types
 
 Pred : Type -> Type
 Pred a = a -> Bool
