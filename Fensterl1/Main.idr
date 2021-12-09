@@ -4,7 +4,8 @@ import Data.List
 import Data.List1
 
 import Common.Input
-import Fensterl1.Comonad
+import Common.Comonad
+import Common.Comonad.List1
 import Fensterl1.Parser
 
 -- For chaining many printLns
@@ -42,15 +43,6 @@ pairThreePointfree = map (sum . take 3) . filter ((>2) . length) . map (uncurry 
         prep l = zip (rangeFromTo 0 (length l)) $ replicate (length l) l
 
 -- Comonad
-Comonad List1 where
-  extract (a ::: _) = a
-  duplicate w@(a ::: aas) = w ::: (case aas of
-                               [] => []
-                               (a'::as) => forget $ duplicate (a':::as))
-
--- extend : Comonad w => (w a -> b) -> w a -> w b
--- extend f w = map f $ duplicate w
-
 deeper' : Ord a => List1 a -> Bool
 deeper' (a:::aas) = case aas of
                         (b::as) => deeper a b

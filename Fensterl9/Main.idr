@@ -8,8 +8,8 @@ import Data.Nat
 import Data.SortedMap
 
 import Common.Input
+import Common.Comonad
 import Fensterl9.Parser
-import Fensterl1.Comonad
 
 data Store : s -> a -> Type where
   MkStore : (s -> a) -> s -> Store s a

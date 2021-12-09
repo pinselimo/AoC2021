@@ -1,4 +1,4 @@
-module Fensterl1.Comonad
+module Common.Comonad
 
 public export
 interface Functor w => Comonad w where
