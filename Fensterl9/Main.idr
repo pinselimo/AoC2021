@@ -78,22 +78,17 @@ neighborOf (x,y) (x', y') = let
 
 combineNeighbors : Coord -> List (List Coord) -> List (List Coord)
 combineNeighbors x l = case partition (any (neighborOf x)) l of
-                    (z::zs, ys) => ((x::z)::zs++ys)
-                    ([], _)     => ([x]::l)
+                         (z::zs, ys) => (x::z) :: zs ++ ys
+                         ([]   ,  _) => pure x :: l
 
 combineBasins : List (List Coord) -> List (List Coord)
 combineBasins [] = []
-combineBasins (xs::xxs) = let
-  (ns, xxs') = partition (any (\n => any (neighborOf n) xs)) xxs
- in (xs ++ concat ns) :: combineBasins xxs'
-
-combineUntilFinished : List (List Coord) -> List (List Coord)
-combineUntilFinished xs = let
-  xs' = combineBasins xs
-  in if xs == xs' then xs else combineUntilFinished xs'
+combineBasins (xs::xxs) = case partition (any ((`any` xs) . neighborOf)) xxs of
+         ([],    _) => xs :: combineBasins xxs
+         (ns, xxs') => combineBasins $ (xs++concat ns) :: xxs'
 
 combine : List Coord -> List (List Coord)
-combine = combineUntilFinished . foldr combineNeighbors []
+combine = combineBasins . foldr combineNeighbors []
 
 ex2Res : List (List Coord) -> Nat
 ex2Res = foldr (*) 1 . take 3 . reverse . sort . map length
