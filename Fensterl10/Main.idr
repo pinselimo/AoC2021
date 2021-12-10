@@ -31,19 +31,15 @@ scoreP : Parens -> Nat
 scoreP (Mismatched m) = score mismatchT m
 scoreP (Missing m) = score missingT m
 
-mismatch : String -> State (List String) (List Parens -> List Parens)
-mismatch = pure . (::) . Mismatched
-
 tidy : List String -> State (List String) (List Parens)
 tidy [] = get >>= pure . map Missing
 tidy (next::todo) = case op next of
     Just closing => get >>= put . (closing ::) >> tidy todo
     Nothing => do
       state <- get
-      put (fromMaybe [] $ tail' state)
-      if fromMaybe False ((==next) <$> head' state)
-         then tidy todo
-         else mismatch next <*> tidy todo
+      put $ fromMaybe [] (tail' state)
+      let x = head' state <&> (==next)
+      tidy todo <&> ifThenElse (fromMaybe False x) id (Mismatched next ::)
 
 tidyup : List String -> List Parens
 tidyup s = evalState [] (tidy s)
