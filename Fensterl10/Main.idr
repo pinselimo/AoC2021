@@ -4,17 +4,14 @@ import Control.Monad.State
 import Data.List
 import Data.List1
 import Data.Nat
+import Data.Maybe
 
 import Common.Input
 import Fensterl10.Parser
 
 data Parens : Type where
-  Mismatched : String -> String -> Parens
+  Mismatched : String -> Parens
   Missing : String -> Parens
-
-Show Parens where
-  show (Mismatched got exp) = got ++ " /= " ++ exp
-  show (Missing exp) = "no " ++ exp
 
 op : String -> Maybe String
 op = (`lookup` [("<", ">"), ("{", "}"), ("[", "]"), ("(", ")")])
@@ -31,36 +28,34 @@ score f s = case f s of
           Just n  => n
 
 scoreP : Parens -> Nat
-scoreP (Mismatched m _) = score mismatchT m
+scoreP (Mismatched m) = score mismatchT m
 scoreP (Missing m) = score missingT m
+
+mismatch : String -> State (List String) (List Parens -> List Parens)
+mismatch = pure . (::) . Mismatched
 
 tidy : List String -> State (List String) (List Parens)
 tidy [] = get >>= pure . map Missing
-tidy (next::todo) = let
-  shouldMatch : String -> State (List String) (List Parens -> List Parens)
-  shouldMatch = pure . (::) . Mismatched next
-  in case op next of
+tidy (next::todo) = case op next of
     Just closing => get >>= put . (closing ::) >> tidy todo
     Nothing => do
       state <- get
-      case state of
-           [] => shouldMatch "" <*> tidy todo
-           (exp::r) => put r >>
-                    if next == exp
-                      then tidy todo
-                      else shouldMatch exp <*> tidy todo
+      put (fromMaybe [] $ tail' state)
+      if fromMaybe False ((==next) <$> head' state)
+         then tidy todo
+         else mismatch next <*> tidy todo
 
 tidyup : List String -> List Parens
 tidyup s = evalState [] (tidy s)
 
 -- Ex1
 getMism : List Parens -> Maybe Parens
-getMism (m@(Mismatched _ _)::_) = Just m
+getMism (m@(Mismatched _)::_) = Just m
 getMism _ = Nothing
 
 -- Ex2
 getMiss : List Parens -> Maybe (List Parens)
-getMiss (m@(Mismatched _ _)::_) = Nothing
+getMiss (m@(Mismatched _)::_) = Nothing
 getMiss xs = Just xs
 
 scoreMissing : Nat -> Parens -> Nat
