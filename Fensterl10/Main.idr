@@ -69,10 +69,10 @@ scoreMissing n p = scoreP p + 5 * n
 scoreMLine : List Parens -> Nat
 scoreMLine = foldl scoreMissing 0
 
-median : List a -> Maybe a
+median : Ord a => List a -> Maybe a
 median xs = let
   half = div (length xs) 2
-  in case drop half xs of
+  in case drop half $ sort xs of
           (x::_) => Just x
           _ => Nothing
 
@@ -85,6 +85,6 @@ main = do
   printLn . sum . map scoreP . mapMaybe getMism . map tidyup . forget $ res
 
   -- Ex 2
-  printLn . median . sort
+  printLn . median
           . map scoreMLine . mapMaybe getMiss . map tidyup . forget $ res
 

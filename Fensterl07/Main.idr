@@ -2,20 +2,18 @@ module Fensterl07.Main
 
 import Data.List1
 import Data.List
+import Data.Nat
 
 import Common.Input
 import Fensterl06.Parser
 
 -- Ex 1
-median : List Nat -> Maybe Nat
+median : Ord a => List a -> Maybe a
 median xs = let
-  tot = length xs
-  splitPoint = cast (cast tot / 2.0)
-  sxs = splitAt splitPoint $ sort xs
-  in case sxs of
-          ([], [])     => Nothing
-          (sx, [])     => last' sx
-          (_ , (x::_)) => Just x
+  half = div (length xs) 2
+  in case drop half $ sort xs of
+          (x::_) => Just x
+          _ => Nothing
 
 diff : (Abs a, Neg a) => a -> a -> a
 diff x y = abs (x - y)
