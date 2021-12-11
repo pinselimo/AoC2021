@@ -35,7 +35,7 @@ recentFlash (MkOcto r _ _) = r
 
 export
 Show a => Show (Octo a) where
-  show (MkOcto _ True _) = "\x1B[36m0\x1B[37m"
+  show (MkOcto _ True _) = "\x1B[36m+\x1B[37m"
   show (MkOcto _ _ n) = padLeft 1 ' ' $ show n
 
 vectToList : Vect n a -> List a
