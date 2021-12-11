@@ -5,6 +5,9 @@ import Data.List
 import Data.Maybe
 import Data.Vect
 
+-- Animation
+import System
+
 import Common.Input
 import Fensterl11.Parser
 import Fensterl11.Types
@@ -75,6 +78,20 @@ allFlashed (MkGrid gs) = all id . map (all hasFlashed) $ gs
 synchro : {n:Nat} -> Nat -> Ocean n (Octo Nat) -> (Nat, Ocean n (Octo Nat))
 synchro n g = if allFlashed g then (n, g) else synchro (S n) . snd . tick $ g
 
+-- Animation
+animate : HasIO io => {n:Nat} -> Nat -> Ocean n (Octo Nat) -> io ()
+animate n g = let
+  (k, g') = tick g
+  in putStr "\x1B[12A"
+  >> printLn g'
+  >> putStrLn ("\x1B[31mTick " ++ show n
+              ++ "\x1B[32m  Flashed " ++ show k
+              ++ "\x1B[37m")
+  >> usleep 200000
+  >> animate (S n) g'
+
+
+
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl11/input"
@@ -83,6 +100,10 @@ main = do
        Nothing => printLn "Error"
        Just grid => do
          -- Ex 1
-         printLn $ simulation 100 grid
+         printLn . fst $ simulation 100 grid
          -- Ex 2
-         printLn $ synchro 0 grid
+         printLn . fst $ synchro 0 grid
+
+         -- Animation
+         printLn grid
+         animate 0 grid
