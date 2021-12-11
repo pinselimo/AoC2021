@@ -8,7 +8,6 @@ data Token : Type where
   TkNewline : Token
   TkWhitespace : Token
   TkDigit : Nat -> Token
-  TkSep : Token
 
 export
 tokenizer : Tokenizer Token
@@ -40,14 +39,6 @@ grammarWhitespace = let
                  TkWhitespace => Just ()
                  _ => Nothing
   in terminal "Whitespace" getWS
-
-grammarSep : Grammar () Token True ()
-grammarSep = let
-  getSep : Token -> Maybe ()
-  getSep x = case x of
-                  TkSep => Just ()
-                  _ => Nothing
-  in terminal "Sep" getSep
 
 grammarLine : Grammar () Token True (List1 Nat)
 grammarLine = someTill grammarNewline grammarDigits
