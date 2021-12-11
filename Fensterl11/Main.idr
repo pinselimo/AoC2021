@@ -61,11 +61,19 @@ tick g = let
   c = totalFired g'
   in (c, g')
 
+-- Ex 1
 simulation : {n:Nat} -> Nat -> Ocean n (Octo Nat) -> (Nat, Ocean n (Octo Nat))
 simulation 0 g = (0, g)
 simulation (S n) g = let
     (k, g') = tick g
   in mapFst (k+) $ simulation n g'
+
+-- Ex 2
+allFlashed : Ocean n (Octo a) -> Bool
+allFlashed (MkGrid gs) = all id . map (all hasFlashed) $ gs
+
+synchro : {n:Nat} -> Nat -> Ocean n (Octo Nat) -> (Nat, Ocean n (Octo Nat))
+synchro n g = if allFlashed g then (n, g) else synchro (S n) . snd . tick $ g
 
 main : HasIO io => io ()
 main = do
@@ -74,4 +82,7 @@ main = do
   case mGrid of
        Nothing => printLn "Error"
        Just grid => do
+         -- Ex 1
          printLn $ simulation 100 grid
+         -- Ex 2
+         printLn $ synchro 0 grid
