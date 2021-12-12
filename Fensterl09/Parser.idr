@@ -14,7 +14,6 @@ tokenizer : Tokenizer Token
 tokenizer = match newline (const TkNewline)
         <|> match spaces (const TkWhitespace)
         <|> match digit (TkDigit . cast)
-        <|> match (exact ",") (const TkSep)
 
 grammarNewline : Grammar () Token True ()
 grammarNewline = let
