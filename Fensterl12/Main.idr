@@ -31,6 +31,9 @@ filterIllegal start end = delete end . map (filter (/=start))
 convert : Ord a => List1 (a, a) -> Graph a
 convert = foldr put empty
 
+isLower : String -> Bool
+isLower s = toLower s == s
+
 -- Ex 1
 convertImpl : List1 (String, String) -> Graph String
 convertImpl = filterIllegal "start" "end" . convert
@@ -38,33 +41,31 @@ convertImpl = filterIllegal "start" "end" . convert
 DepPred : Type -> Type
 DepPred a = List a -> a -> Bool
 
-forbidden : DepPred String
-forbidden p n = not $ toLower n == n && elem n p
+allowed : DepPred String
+allowed p n = not $ isLower n && elem n p
 
 continue : List1 String -> DepPred String -> Graph String
         -> List (List1 String)
 continue p@("end":::_) _ _ = [p]
 continue p@(n:::_) pr g = let
     p' = forget p
-  in concat . map ((\x => continue x pr g) . (:::p')) . filter (pr p') $ find n g
+  in foldMap (\h => continue (h:::p') pr g) . filter (pr p') $ find n g
 
 findPaths : DepPred String -> Graph String -> List (List1 String)
 findPaths p = map reverse . continue ("start":::[]) p
 
 -- Ex 2
-hasTwice : List String -> Bool
-hasTwice l = let
-    l' = filter (\n => toLower n == n) l
-  in any (\n => count (==n) l' > 1) l'
+noTwice : List String -> Bool
+noTwice l = not $ any (\n => isLower n && count (==n) l > 1) l
 
-twiceAllowed : DepPred String 
-twiceAllowed p n = (not $ toLower n == n && hasTwice p) || forbidden p n 
+twiceAllowed : DepPred String
+twiceAllowed p n = noTwice p || allowed p n
 
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl12/input"
   --printLn res
 
-  printLn $ length $ findPaths forbidden $ convertImpl res
+  printLn $ length $ findPaths allowed $ convertImpl res
 
   printLn $ length $ findPaths twiceAllowed $ convertImpl res
