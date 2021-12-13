@@ -105,5 +105,7 @@ main = do
          printLn . fst $ synchro 0 grid
 
          -- Animation
+         putStrLn ""
          printLn grid
+         putStrLn "Let's go"
          animate 0 grid
