@@ -45,6 +45,7 @@ main = do
   (poly, rules) <- Input.readInput tokenizer grammar "Fensterl14/input"
   let m = toMap . pairsZip . forget $ poly
   printLn . problem (head poly) . substituteN 10 rules $ m
+  printLn . problem (head poly) . substituteN 40 rules $ m
 
 
 -- Proofs
