@@ -1,0 +1,83 @@
+module Fensterl15.Comonadic
+
+import Data.Fin
+import Data.Maybe
+import Data.List
+import Data.List1
+
+import Common.Input
+import Common.Comonad
+import Common.Comonad.Store
+import Fensterl11.Parser
+
+Coord : Type
+Coord = (Nat, Nat)
+
+Grid : Type -> Type
+Grid ty = Store Coord (Maybe ty)
+
+infix 6 !!
+(!!) : List a -> Nat -> Maybe a
+l !! i = index' l <$> natToFin i (length l)
+
+infixl 1 &>=
+(&>=) : (Functor f, Monad m) => f (m a) -> (a -> m b) -> f (m b)
+m &>= f = (>>= f) <$> m
+
+fromList : List (List a) -> Grid a
+fromList ll = MkStore (\(x,y) => (ll !! x) >>= (!!y)) (0, 0)
+
+dimNeighbors : Nat -> List Nat
+dimNeighbors (S a) = [a..a+2]
+dimNeighbors _ = [0, 1]
+
+neighborOf : Coord -> Coord -> Bool
+neighborOf (x,y) (x', y') = let
+  ym = y == y'
+  xm = x == x'
+  in (xm || ym) && (x == S x' || y == S y' || x' == S x || y' == S y)
+
+neighbors : Coord -> List Coord
+neighbors (x, y) = filter (neighborOf (x,y)) $ [(x',y')
+  | x' <- dimNeighbors x
+  , y' <- dimNeighbors y
+  , x/=x' || y/=y'
+  ]
+
+-- Ex 1
+lowest : (Ord a, Num a) => List (a, Coord) -> Maybe a -> Maybe (a, Coord)
+lowest [] _ = Nothing
+lowest (x::xs) y = do
+    let (wy, cy) = (foldr1 (\a, b => if fst a < fst b then a else b) (x:::xs))
+    x' <- y
+    pure $ (wy+x', cy)
+
+findLowest : (Ord a, Num a) => List Coord -> Grid a -> Maybe (a, Coord)
+findLowest visited g = let
+  cp = pos g
+  nc = filter (not . (`elem` visited)) $ mapMaybe (\n => const n <$> peek n g) $ neighbors cp
+  nw = mapMaybe (\c => mapSnd (const c) 
+                   <$> (findLowest (cp::visited) $ seek c g)) nc
+  in if (0,0) `elem` nc 
+        then (,(0,0)) <$> extract g
+        else lowest nw $ extract g
+
+extractPath : Grid (a, Coord) -> List (a, Coord)
+extractPath g = case extract g of
+                     Nothing => []
+                     Just r@(_, src) => if pos g == (0,0) 
+                                           then [] 
+                                           else r :: (extractPath $ seek src g)
+
+
+problem1 : (Num a, Ord a) => List1 (List1 a) -> List (a, Coord)
+problem1 ls = let
+  g = fromList $ forget $ map forget ls
+  dim = integerToNat $ natToInteger (length $ forget ls)-1
+  in extractPath $ seek (dim, dim) $ extend (findLowest []) g
+
+
+main : HasIO io => io ()
+main = do
+  res <- Input.readInput tokenizer grammar "Fensterl15/testinput2"
+  printLn $ problem1 $ res
