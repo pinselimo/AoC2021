@@ -11,14 +11,14 @@ import Common.Comonad.Store
 import Fensterl11.Parser
 
 Coord : Type
-Coord = (Nat, Nat)
+Coord = (Integer, Integer)
 
 Grid : Type -> Type
 Grid ty = Store Coord (Maybe ty)
 
 infix 6 !!
-(!!) : List a -> Nat -> Maybe a
-l !! i = index' l <$> natToFin i (length l)
+(!!) : List a -> Integer -> Maybe a
+l !! i = index' l <$> integerToFin i (length l)
 
 infixl 1 &>=
 (&>=) : (Functor f, Monad m) => f (m a) -> (a -> m b) -> f (m b)
@@ -27,23 +27,8 @@ m &>= f = (>>= f) <$> m
 fromList : List (List a) -> Grid a
 fromList ll = MkStore (\(x,y) => (ll !! x) >>= (!!y)) (0, 0)
 
-dimNeighbors : Nat -> List Nat
-dimNeighbors (S a) = [a..a+2]
-dimNeighbors _ = [0, 1]
-
-neighborOf : Coord -> Coord -> Bool
-neighborOf (x,y) (x', y') = let
-  ym = y == y'
-  xm = x == x'
-  in (xm || ym) && (x == S x' || y == S y' || x' == S x || y' == S y)
-
 neighbors : Coord -> List Coord
-neighbors (x, y) = filter (neighborOf (x,y)) $ [(x',y')
-  | x' <- dimNeighbors x
-  , y' <- dimNeighbors y
-  , x/=x' || y/=y'
-  ]
-
+neighbors (x, y) = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
 -- Ex 1
 lowest : (Ord a, Num a) => List (a, Coord) -> Maybe a -> Maybe (a, Coord)
 lowest [] _ = Nothing
@@ -73,7 +58,7 @@ extractPath g = case extract g of
 problem1 : (Num a, Ord a) => List1 (List1 a) -> List (a, Coord)
 problem1 ls = let
   g = fromList $ forget $ map forget ls
-  dim = integerToNat $ natToInteger (length $ forget ls)-1
+  dim = natToInteger (length $ forget ls)-1
   in extractPath $ seek (dim, dim) $ extend (findLowest []) g
 
 
