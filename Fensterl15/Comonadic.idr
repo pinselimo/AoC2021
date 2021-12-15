@@ -29,31 +29,31 @@ fromList ll = MkStore (\(x,y) => (ll !! x) >>= (!!y)) (0, 0)
 
 neighbors : Coord -> List Coord
 neighbors (x, y) = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+
 -- Ex 1
-lowest : (Ord a, Num a) => List (a, Coord) -> Maybe a -> Maybe (a, Coord)
+lowest : (Ord a, Num a) => List (a, Coord) -> a -> Maybe (a, Coord)
 lowest [] _ = Nothing
-lowest (x::xs) y = do
-    let (wy, cy) = (foldr1 (\a, b => if fst a < fst b then a else b) (x:::xs))
-    x' <- y
-    pure $ (wy+x', cy)
+lowest (x::xs) y = Just
+                 $ mapFst (+y)
+                 $ foldr1 (\a, b => if fst a < fst b then a else b) (x:::xs)
 
 findLowest : (Ord a, Num a) => List Coord -> Grid a -> Maybe (a, Coord)
 findLowest visited g = let
   cp = pos g
-  nc = filter (not . (`elem` visited)) $ mapMaybe (\n => const n <$> peek n g) $ neighbors cp
-  nw = mapMaybe (\c => mapSnd (const c) 
+  ns = neighbors cp
+  in if (0,0) `elem` ns then (, (0,0)) <$> extract g
+  else let
+  nc = filter (not . (`elem` visited)) $ mapMaybe (\n => const n <$> peek n g) $ ns
+  nw = mapMaybe (\c => mapSnd (const c)
                    <$> (findLowest (cp::visited) $ seek c g)) nc
-  in if (0,0) `elem` nc 
-        then (,(0,0)) <$> extract g
-        else lowest nw $ extract g
+  in lowest nw =<< extract g
 
 extractPath : Grid (a, Coord) -> List (a, Coord)
 extractPath g = case extract g of
                      Nothing => []
-                     Just r@(_, src) => if pos g == (0,0) 
-                                           then [] 
+                     Just r@(_, src) => if pos g == (0,0)
+                                           then []
                                            else r :: (extractPath $ seek src g)
-
 
 problem1 : (Num a, Ord a) => List1 (List1 a) -> List (a, Coord)
 problem1 ls = let
@@ -64,5 +64,6 @@ problem1 ls = let
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl15/testinput2"
+  res <- Input.readInput tokenizer grammar "Fensterl15/testinput"
   printLn $ problem1 $ res
+
