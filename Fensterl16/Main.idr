@@ -13,9 +13,6 @@ import Common.Input
 import Fensterl16.Parser
 import Fensterl03.Binaries
 
--- For chaining many printLns
-%ambiguity_depth 6
-
 data Bit = O | I
 
 -- from Fensterl03.Main
