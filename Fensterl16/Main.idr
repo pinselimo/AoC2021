@@ -79,7 +79,7 @@ grBit = grOne <|> grZero
 
 grLiteralN : Grammar () TkBit True (List Bit)
 grLiteralN = do
-  v <- concat <$> many going
+  v <- concat <$> many bitstrings
   l <- last
   pure $ v ++ l
   where
@@ -87,8 +87,8 @@ grLiteralN = do
     last = do
       _ <- grZero
       count (atMost 4) grBit
-    going : Grammar () TkBit True (List Bit)
-    going = do
+    bitstrings : Grammar () TkBit True (List Bit)
+    bitstrings = do
       _ <- grOne
       count (atMost 4) grBit
 
