@@ -24,24 +24,12 @@ data TkBit : Type where
   TkOne : String -> TkBit
   TkZero : String -> TkBit
 
-Show TkBit where
-  show (TkOne _) = "Tk I"
-  show (TkZero _) = "Tk O"
-
 bitTk : Bit -> TkBit
 bitTk I = TkOne "1"
 bitTk O = TkZero "0"
 
-Show Bit where
-  show I = "I"
-  show O = "O"
-
 data Packet = Operator Nat Nat (List Packet)
             | Literal Nat Nat
-
-Show Packet where
-  show (Operator v i ps) = "OP " ++ show v ++ " " ++ show i ++ show ps
-  show (Literal v i) = "LIT " ++ show v ++ " - " ++ show i
 
 binTokenizer : Tokenizer TkBit
 binTokenizer = match (exact "1") TkOne
@@ -107,17 +95,15 @@ grOperator = do
         len <- fromBits <$> count (atMost 15) grBit
         subData <- map irrelevantBounds <$> count (atMost len) grBit
         pure $ (case parse (mapToken bitTk $ many grPacket) subData of
-             Left err => ?hole
+             Left err => []
              Right (ps, _) => ps)
 
-
-grPacket = (try grLiteral) <|> grOperator
+grPacket = try grLiteral <|> grOperator
 
 parsePacket : HasIO io => String -> io Packet
-parsePacket inp = do 
-  tok <- handleEitherErr show (eitherLex binTokenizer inp)
-  par <- handleEitherErr extractParsingError . parse (grPacket <* many grZero) $ tok
-  pure . Builtin.fst $ par
+parsePacket inp = handleEitherErr show (eitherLex binTokenizer inp)
+  >>= handleEitherErr extractParsingError . parse (grPacket <* many grZero)
+  >>= pure . Builtin.fst
 
 -- Ex 1:
 versionSum : Packet -> Nat
