@@ -1,28 +1,15 @@
 module Fensterl16.Main
 
 import Data.Nat
-import Data.List
 import Data.List1
 import Text.Lexer
 import Text.Lexer.Tokenizer
 import Text.Parser
 
-import Debug.Trace
-
 import Common.Input
 import Fensterl16.Parser
-import Fensterl03.Binaries
 
 data Bit = O | I
-
--- from Fensterl03.Main
-toBin : List Bit -> Bin
-toBin = toBin' . reverse
-  where
-    toBin' : List Bit -> Bin
-    toBin' [] = Z
-    toBin' (I::r) = B1 $ toBin' r
-    toBin' (O::r) = B0 $ toBin' r
 
 bitsInt : List Bit -> List Integer
 bitsInt = map int
