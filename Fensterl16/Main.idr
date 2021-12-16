@@ -136,10 +136,35 @@ versionSum : Packet -> Nat
 versionSum (Operator v _ ps) = v + (sum $ map versionSum ps)
 versionSum (Literal v _) = v
 
+-- Ex 2:
+totalPacket : Packet -> Nat
+totalPacket (Literal v n) = n
+totalPacket (Operator v id ps) = case id of
+    0 => sum $ map totalPacket ps
+    1 => product $ map totalPacket ps
+    2 => foldr min 9999 $ map totalPacket ps
+    3 => foldr max 0 $ map totalPacket ps
+    5 => case ps of
+              [] => 0
+              (_::[]) => 0
+              (h::x::xs) => if totalPacket h > totalPacket (last (x:::xs))
+                               then 1 else 0
+    6 => case ps of
+              [] => 0
+              (_::[]) => 0
+              (h::x::xs) => if totalPacket h < totalPacket (last (x:::xs))
+                               then 1 else 0
+    7 => case ps of
+              [] => 0
+              (_::[]) => 0
+              (h::x::xs) => if totalPacket h == totalPacket (last (x:::xs))
+                               then 1 else 0
+
 main : HasIO io => io ()
 main = do
   inp <- Input.readInput tokenizer grammar "Fensterl16/input"
   printLn inp
   packet <- parsePacket inp
   printLn $ versionSum packet
+  printLn $ totalPacket packet
 
