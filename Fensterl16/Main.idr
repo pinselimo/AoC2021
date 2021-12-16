@@ -24,8 +24,14 @@ toBin = toBin' . reverse
     toBin' (I::r) = B1 $ toBin' r
     toBin' (O::r) = B0 $ toBin' r
 
+bitsInt : List Bit -> List Integer
+bitsInt = map int
+  where int : Bit -> Integer
+        int I = 1
+        int O = 0
+
 fromBits : List Bit -> Nat
-fromBits = binToNat . toBin
+fromBits = integerToNat . foldl (\acc, d => d + 2 * acc) 0 . bitsInt
 
 data TkBit : Type where
   TkOne : String -> TkBit
@@ -73,8 +79,10 @@ grBit = grOne <|> grZero
 
 grLiteralN : Grammar () TkBit True (List Bit)
 grLiteralN = do
-  last <|> going
-  where -- case inside of do cannot guess type
+  v <- concat <$> many going
+  l <- last
+  pure $ v ++ l
+  where
     last : Grammar () TkBit True (List Bit)
     last = do
       _ <- grZero
@@ -82,14 +90,11 @@ grLiteralN = do
     going : Grammar () TkBit True (List Bit)
     going = do
       _ <- grOne
-      bits <- count (atMost 4) grBit
-      next <- grLiteralN
-      pure $ bits ++ next
+      count (atMost 4) grBit
 
 grLiteral : Grammar () TkBit True Packet
 grLiteral = do
   v <- fromBits <$> count (atMost 3) grBit
-  --trace ("Literal v: " ++ show v) (pure ())
   _ <- grOne *> grZero *> grZero
   n <- fromBits <$> grLiteralN
   pure $ Literal v n
@@ -99,7 +104,6 @@ grPacket : Grammar () TkBit True Packet
 grOperator : Grammar () TkBit True Packet
 grOperator = do
   v  <- fromBits <$> count (atMost 3) grBit
-  --trace ("Operator v: " ++ show v) (pure ())
   id <- fromBits <$> count (atMost 3) grBit
   ps <- this <|> that
   pure $ Operator v id ps
@@ -139,7 +143,7 @@ totalPacket (Literal v n) = n
 totalPacket (Operator v id ps) = case id of
     0 => sum $ map totalPacket ps
     1 => product $ map totalPacket ps
-    2 => foldr min 9999 $ map totalPacket ps
+    2 => foldr min 999999999 $ map totalPacket ps
     3 => foldr max 0 $ map totalPacket ps
     5 => case ps of
               [] => 0
@@ -156,11 +160,14 @@ totalPacket (Operator v id ps) = case id of
               (_::[]) => 0
               (h::x::xs) => if totalPacket h == totalPacket (last (x:::xs))
                                then 1 else 0
+    _ => 0
 
 main : HasIO io => io ()
 main = do
   inp <- Input.readInput tokenizer grammar "Fensterl16/input"
   printLn inp
+  --packet <- parsePacket "00111000000000000110111101000101001010010001001000000000"
+
   packet <- parsePacket inp
   printLn $ versionSum packet
   printLn $ totalPacket packet
