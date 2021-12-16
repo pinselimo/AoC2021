@@ -165,8 +165,7 @@ totalPacket (Operator v id ps) = case id of
 main : HasIO io => io ()
 main = do
   inp <- Input.readInput tokenizer grammar "Fensterl16/input"
-  printLn inp
-  --packet <- parsePacket "00111000000000000110111101000101001010010001001000000000"
+  --printLn inp
 
   packet <- parsePacket inp
   printLn $ versionSum packet
