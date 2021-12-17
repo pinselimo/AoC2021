@@ -1,11 +1,6 @@
 module Fensterl17.Main
 
 import Data.List
-import Data.List1
-import Debug.Trace
-
-import Common.Input
-import Fensterl17.DataParser
 
 Coord : Type
 Coord = (Int, Int)
@@ -25,23 +20,6 @@ maxVelocityY upper lower = go 0 upper lower
   where
     go : Int -> Int -> Int -> Int
     go n u l = if sum [l..n] > u then n-1 else go (n+1) u l
-
-allVelY : Int -> Int -> List Int
-allVelY upper lower = nub $ go lower (maxVelocityY upper lower)
-  where
-    go : Int -> Int -> List Int
-    go s e = let
-          f : Int -> Int
-          f = if e>=upper then (1+) else (\x => x-1)
-        in if s < lower
-          then []
-          else let
-        sm = sum [s..e]
-        in if sm < lower
-          then go (f s) e
-          else if sm > upper
-          then go s (e-1)
-          else e :: (go s (e-1))
 
 minVelocityX : Int -> Int
 minVelocityX xmin = let
@@ -70,26 +48,23 @@ sim (xmin, xmax) (ymax, ymin) v = go (v, (0,0))
   where
     go : (Vel, Coord) -> Bool
     go p@(_, (x,y)) = if xmin <= x && x <= xmax
-                    && ymin <= y && y <= ymax
+                      && ymin <= y && y <= ymax
                     then True
-                    else if x > xmax || y < ymin then False
-                    else go $ step p
+                    else if x > xmax || y < ymin
+                      then False
+                      else go $ step p
 
 main : HasIO io => io ()
 main = do
-  res <- Input.readInput tokenizer grammar "Fensterl17/testdata"
-  let theirs = map (\(a,b) => (fromInteger a, fromInteger b)) $ sort $ forget res
+  let (xmin, xmax, ymin, ymax) = (207, 263, -115, -63)
   -- Ex 1
-  printLn $ sum [0..maxVelocityY (-63) (-115)]
+  printLn $ sum [0..maxVelocityY ymax ymin]
 
-  printLn $ sort $ allVelX 20 30
-  printLn $ sort $ allVelY (-5) (-10)
-
-  let mine = filter (sim (20, 30) (-5, -10))
-           $ [ (x,y)
-             | x <- allVelX 20 30
-             , y <- allVelY (-5) (-10)
+  -- Ex 2
+  printLn $ length
+          $ filter (sim (xmin, xmax) (ymax, ymin))
+          $ [ (x,y)
+             | x <- allVelX xmin xmax
+             , y <- [ymin..maxVelocityY (ymax) (ymin)]
              ]
-  printLn $ length theirs
-  printLn $ length mine
-  printLn $ [m | m <- theirs, not (elem m mine)]
+
