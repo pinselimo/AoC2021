@@ -54,18 +54,9 @@ grBit = grOne <|> grZero
 
 grLiteralN : Grammar () TkBit True (List Bit)
 grLiteralN = do
-  v <- concat <$> many bitstrings
-  l <- last
+  v <- concat <$> many (grOne *> count (atMost 4) grBit)
+  l <- grZero *> count (atMost 4) grBit
   pure $ v ++ l
-  where
-    last : Grammar () TkBit True (List Bit)
-    last = do
-      _ <- grZero
-      count (atMost 4) grBit
-    bitstrings : Grammar () TkBit True (List Bit)
-    bitstrings = do
-      _ <- grOne
-      count (atMost 4) grBit
 
 grLiteral : Grammar () TkBit True Packet
 grLiteral = do
@@ -84,14 +75,12 @@ grOperator = do
   pure $ Operator v id ps
     where
       that : Grammar () TkBit True (List Packet)
-      that = do
-        _ <- grOne
+      that = grOne *> do
         n <- fromBits <$> count (atMost 11) grBit
         count (atMost n) grPacket
 
       this : Grammar () TkBit True (List Packet)
-      this = do
-        _ <- grZero
+      this = grZero *> do
         len <- fromBits <$> count (atMost 15) grBit
         subData <- map irrelevantBounds <$> count (atMost len) grBit
         pure $ (case parse (mapToken bitTk $ many grPacket) subData of
