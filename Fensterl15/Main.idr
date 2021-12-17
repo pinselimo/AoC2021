@@ -19,7 +19,7 @@ Coord : Type
 Coord = (Int, Int)
 
 neighbors : Coord -> List Coord
-neighbors (x, y) = filter (\(x,y) => x >= 0 && y >= 0) $ [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+neighbors (x, y) = filter (\(x,y) => x >= 0 && y >= 0) [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
 
 Distances : Type
 Distances = SortedMap Coord Nat
@@ -51,7 +51,8 @@ step g (q, p, d) = case least q of
                Nothing => (q, p, d)
                Just (u,q') => if u == (499, 499)
                       then (q, p, d)
-                      else step g $ foldr ($) (q', p, d) $ map (nbrsStep g u) $ neighbors u
+                      else step g $ foldr ($) (q', p, d)
+                                  $ nbrsStep g u <$> neighbors u
 
 conv : (Nat, Nat) -> (Int, Int)
 conv (x,y) = (fromInteger $ natToInteger x, fromInteger $ natToInteger y)
@@ -65,7 +66,7 @@ getDists = insert (0,0) 0 . fromList . map (,99999999999) -- inf
          . concat . mapi (\x, xs => mapi (\y,_ => conv (x,y)) xs)
 
 run : Graph -> Distances -> (Preds, Distances)
-run g d = snd $ step g (fromList [((0, (0,0)), ())], empty, d)
+run g = snd . step g . (fromList [((0, (0,0)), ())], empty,)
 
 -- Ex 2
 add' : Nat -> Nat -> Nat
@@ -74,7 +75,7 @@ add' a b = let
   in if c == 0 then 9 else c
 
 enlarge1 : Nat -> List Nat -> List Nat
-enlarge1 n = concat . mapi (\i, xs => map (add' i) xs) . (replicate n)
+enlarge1 n = concat . mapi (\i, xs => map (add' i) xs) . replicate n
 
 enlarge : Nat -> List (List Nat) -> List (List Nat)
 enlarge n = transpose . map (enlarge1 n) . transpose . map (enlarge1 n)
