@@ -1,5 +1,12 @@
 module Fensterl17.Main
 
+import Data.List
+import Data.List1
+import Debug.Trace
+
+import Common.Input
+import Fensterl17.DataParser
+
 Coord : Type
 Coord = (Int, Int)
 
@@ -13,14 +20,28 @@ step ((vx, vy), (x, y)) = case (vx > 0, vx < 0) of
   (False,  True) => ((vx+1, vy-1), (x+vx, y+vy))
   _ => ((vx, vy-1), (x, y+vy)) -- can never happen
 
--- This is the longest we can fly to hit our target
-startVelocityX : Int -> Int
-startVelocityX xmax = let
-  vmax = go 0 (abs xmax)
-  in if xmax < 0 then (-1) * vmax else vmax
+maxVelocityY : Int -> Int -> Int
+maxVelocityY upper lower = go 0 upper lower
   where
-    go : Int -> Int -> Int
-    go n u = if sum [0..n] >= u then n-1 else go (n+1) u
+    go : Int -> Int -> Int -> Int
+    go n u l = if sum [l..n] > u then n-1 else go (n+1) u l
+
+allVelY : Int -> Int -> List Int
+allVelY upper lower = nub $ go lower (maxVelocityY upper lower)
+  where
+    go : Int -> Int -> List Int
+    go s e = let
+          f : Int -> Int
+          f = if e>=upper then (1+) else (\x => x-1)
+        in if s < lower
+          then []
+          else let
+        sm = sum [s..e]
+        in if sm < lower
+          then go (f s) e
+          else if sm > upper
+          then go s (e-1)
+          else e :: (go s (e-1))
 
 minVelocityX : Int -> Int
 minVelocityX xmin = let
@@ -30,22 +51,45 @@ minVelocityX xmin = let
     go : Int -> Int -> Int
     go n l = if sum [0..n] >= l then n else go (n+1) l
 
-maxVelocityY : Int -> Int -> Int
-maxVelocityY upper lower = go 0 upper lower
+allVelX : Int -> Int -> List Int
+allVelX lower upper = go 1 (minVelocityX lower)
   where
-    go : Int -> Int -> Int -> Int
-    go n u l = if sum [l..n] > u then n-1 else go (n+1) u l
+    go : Int -> Int -> List Int
+    go s e = let sm = sum [s..e]
+        in   if s > upper 
+        then [] 
+        else if sm > upper
+        then go (s+1) e
+        else let es = go s (e+1) 
+        in   if sm < lower
+        then es
+        else e :: es
 
-maxHeight : Vel -> Int
-maxHeight v = maxHeight' (v, (0,0))
+sim : (Int, Int) -> (Int, Int) -> Vel -> Bool
+sim (xmin, xmax) (ymax, ymin) v = go (v, (0,0))
   where
-    maxHeight' : (Vel, Coord) -> Int
-    maxHeight' d@(_, (_, y)) = let
-      d'@(_, (_, y')) = step d
-      in if y' < y then y else maxHeight' d'
+    go : (Vel, Coord) -> Bool
+    go p@(_, (x,y)) = if xmin <= x && x <= xmax
+                    && ymin <= y && y <= ymax
+                    then True
+                    else if x > xmax || y < ymin then False
+                    else go $ step p
 
 main : HasIO io => io ()
 main = do
+  res <- Input.readInput tokenizer grammar "Fensterl17/testdata"
+  let theirs = map (\(a,b) => (fromInteger a, fromInteger b)) $ sort $ forget res
   -- Ex 1
-  printLn $ maxHeight (startVelocityX 263, maxVelocityY (-63) (-115))
+  printLn $ sum [0..maxVelocityY (-63) (-115)]
 
+  printLn $ sort $ allVelX 20 30
+  printLn $ sort $ allVelY (-5) (-10)
+
+  let mine = filter (sim (20, 30) (-5, -10))
+           $ [ (x,y)
+             | x <- allVelX 20 30
+             , y <- allVelY (-5) (-10)
+             ]
+  printLn $ length theirs
+  printLn $ length mine
+  printLn $ [m | m <- theirs, not (elem m mine)]
