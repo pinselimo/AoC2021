@@ -1,7 +1,9 @@
 module Fensterl18.Main
 
+import Data.List
 import Data.List1
 import Data.Nat
+import Data.Maybe
 
 import Debug.Trace
 
@@ -72,4 +74,16 @@ magnitude (Numb n) = n
 main : HasIO io => io ()
 main = do
   res <- Input.readInput tokenizer grammar "Fensterl18/input"
-  printLn $ magnitude $ foldl1By addSnails id res
+  printLn $ magnitude $ foldl1By addSnails id res -- Ex 1
+
+  -- Ex 2
+  let largest : List Nat
+      largest = reverse . sort
+              . map (\x => fromMaybe 0 . head' . reverse . sort 
+                         . map (magnitude . addSnails x) . filter (/=x) 
+                         $ forget res
+                         )
+              $ forget res
+
+  printLn $ head' largest
+
