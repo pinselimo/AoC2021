@@ -1,0 +1,14 @@
+target area: x=207..263, y=-115..-63
+
+minFlytime : Int -> Nat
+minFlytime xmax = let
+  vmax = startVelocityX xmax
+  in length [0..(abs vmax)]
+
+startVelocityY : Int -> Int -> Int
+startVelocityY upper lower = go 0 lower
+  where
+    maxEndVel : Int
+    maxEndVel = lower - upper
+    go : Int -> Int -> Int
+    go n l = if (sum [0..n] + sum [maxEndVel..n]) >= upper then n-1 else go (n+1) l
