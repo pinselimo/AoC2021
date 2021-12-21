@@ -43,31 +43,31 @@ rotations = zip3 [1,  1,  1,  1, -1, -1, -1, -1]
                  [1,  1, -1, -1,  1,  1, -1, -1]
                  [1, -1,  1, -1,  1, -1,  1, -1]
 
-match : Coords -> List Coords -> List Coords -> Swap -> Coords -> Coords -> Maybe (List Coords)
+match : Coords -> List Coords -> List Coords -> Swap -> Coords -> Coords -> Maybe (Coords, List Coords)
 match c orig other sw rot sample = let
   other' = map (\x => sum c (swap sw (mult rot (diff x sample)))) other
   news   = length $ filter (`elem` orig) other' -- trace (unlines $ map show $ zip (sort orig) $ sort other') $ 
-  in if news >= 12 then Just other' else Nothing
+  in if news >= 12 then Just (sum c (swap sw (mult rot (diff (0,0,0) sample))), other') else Nothing
 
-tryRot : List Coords -> List Coords -> Coords -> Swap -> Coords -> Maybe (List Coords)
+tryRot : List Coords -> List Coords -> Coords -> Swap -> Coords -> Maybe (Coords, List Coords)
 tryRot orig sample c sw rot = let
   match = head' $ mapMaybe (match c orig sample sw rot) sample
   in case match of
           Nothing => Nothing
-          Just cs => Just $ nub $ orig ++ cs
+          Just (s,cs) => Just (s, nub $ orig ++ cs)
 
-trySwap : List Coords -> List Coords -> Coords -> Swap -> Maybe (List Coords)
+trySwap : List Coords -> List Coords -> Coords -> Swap -> Maybe (Coords, List Coords)
 trySwap orig sample c sw = head' $ mapMaybe (tryRot orig sample c sw) rotations
 
-try : List Coords -> List Coords -> Coords -> Maybe (List Coords)
+try : List Coords -> List Coords -> Coords -> Maybe (Coords, List Coords)
 try orig sample c = head' $ mapMaybe (trySwap orig sample c) [None, SAB, SBC, SAC, SBCA, SCAB]
 
-merge : List1 (List Coords) -> List (List Coords) -> List Coords
-merge (x:::[]) [] = x
-merge (x:::[]) xs = merge (x:::xs) []
-merge (x:::y::xs) ys = case trace (show $ length xs) $ mapMaybe (try x y) x of
-                            [] => merge (x:::xs) (y::ys)
-                            x'::_ => merge (x':::xs) ys
+merge : List1 (List Coords) -> List (List Coords) -> List Coords -> (List Coords, List Coords)
+merge (x:::[]) [] sens = (sens, x)
+merge (x:::[]) xs sens = merge (x:::xs) [] sens
+merge (x:::y::xs) ys sens = case trace (show $ length xs) $ mapMaybe (try x y) x of
+                            [] => merge (x:::xs) (y::ys) sens
+                            (s, x')::_ => merge (x':::xs) ys (s::sens)
 
 manhattan : Coords -> Coords -> Int
 manhattan (ax, ay, az) (bx, by, bz) = abs (bx-ax) + abs (by-ay) + abs (bz-az) 
@@ -77,5 +77,7 @@ main = do
   res <- Input.readInput tokenizer grammar "Fensterl19/input"
   printLn . length . forget $ res
 
-  let res' = map snd res
-  printLn $ List.length $ Main.merge res' []
+  let res' = Main.merge (map snd res) [] []
+  printLn $ List.length $ snd res'
+
+  printLn $ foldr max 0 $ concatMap (\x => map (manhattan x) (fst res')) $ fst res'
